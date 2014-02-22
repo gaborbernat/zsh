@@ -1,0 +1,54 @@
+#
+# Executes commands at the start of an interactive session.
+#
+# Authors:
+#   Sorin Ionescu <sorin.ionescu@gmail.com>
+#
+
+# Source Prezto.
+if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
+  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+fi
+
+# Customize to your needs...
+
+function prx() {
+    pwd=`pwd`
+    cd /m/git/reco/CustomizeEar/
+    ./customize-prod-ear.sh $1 customize-js4-api -Djs4api-hud=true -Djs4api-domengine=true
+    rm -v -rf /m/git/jsapi/proxy/$1
+    cp -v -a TmpDir/js/$1 /m/git/jsapi/proxy
+    chmod -v  -R 777  /m/git/jsapi/proxy
+    killall -9 mitmproxy 
+    which mitmproxy
+    echo "Press [any] key to start"
+    read -n 1
+    mitmproxy -v -p 3333 --replace ":.*:api.worldgravity.com/js/:localhost/jsapi/proxy/" \
+                      --replace ":.*:saas.gravityrd.com/js/:localhost/jsapi/proxy/" \
+                      --replace ":.*:gr_reco4-min:gr_reco4" 
+    cd "$pwd"
+}
+TERM=xterm-256color
+
+# ssh wrapper that rename current tmux window to the hostname of the
+# remote host.
+ssh() {
+    # Do nothing if we are not inside tmux or ssh is called without arguments
+    if [[ $# == 0 || -z $TMUX ]]; then
+        command ssh $@
+        return
+    fi
+    # The hostname is the last parameter (i.e. ${(P)#})
+    local remote=${${(P)#}%.*}
+    local old_name="$(tmux display-message -p '#W')"
+    local renamed=0
+    # Save the current name
+    if [[ $remote != -* ]]; then
+        renamed=1
+        tmux rename-window $remote
+    fi
+    command ssh $@
+    if [[ $renamed == 1 ]]; then
+        tmux rename-window "$old_name"
+    fi
+}
