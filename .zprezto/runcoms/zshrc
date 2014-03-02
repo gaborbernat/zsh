@@ -112,3 +112,4 @@ complete -F _apparix_aliases to
 
 alias g='git'
 complete -o default -o nospace -F _git g
+
