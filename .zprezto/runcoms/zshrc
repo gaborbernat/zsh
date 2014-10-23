@@ -18,11 +18,11 @@ history|awk '{print $2}'|awk 'BEGIN {FS="|"} {print $1}'|sort|uniq -c|sort -r
 
 function prx() {
     pwd=`pwd`
-    cd /m/reco/CustomizeEar/
+    cd /home/bernat/git/reco/CustomizeEar
     ./customize-prod-ear.sh $1 customize-js4-api -Djs4api-hud=true -Djs4api-domengine=true
-    rm -v -rf /m/jsapi/proxy/$1
-    cp -v -a TmpDir/js/$1 /m/jsapi/proxy
-    chmod -v  -R 777  /m/jsapi/proxy
+    rm -v -rf /home/bernat/git/jsapi/proxy/$1
+    cp -v -a TmpDir/js/$1 /home/bernat/git/jsapi/proxy
+    chmod -v  -R 777  /home/bernat/git//jsapi/proxy
     killall -9 mitmproxy 
     which mitmproxy
     echo "Press [any] key to start"
@@ -119,4 +119,18 @@ complete -F _apparix_aliases to
 
 alias g='git'
 complete -o default -o nospace -F _git g
-
+alias pi="sudo pacman -S"
+alias yi="yaourt -S"
+alias lsa="la -alth"
+alias b="(to reco grrec;  ant dist) "
+alias cb="(to reco grrec;  ant clean dist)"
+connect_via_mosh(){
+ mosh $1 -- tmux attach || mosh $1 -- tmux
+}
+connect_via_ssh(){
+ ssh $1 -- tmux attach || ssh $1 -- tmux
+}
+alias m=connect_via_mosh
+alias s=connect_via_ssh
+alias cp='acp -g'
+alias mv='amv -g'
