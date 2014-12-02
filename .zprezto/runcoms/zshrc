@@ -95,8 +95,8 @@ complete -o default -o nospace -F _git g
 alias pi="sudo pacman --noconfirm -S"
 alias yi="yaourt --noconfirm -S"
 alias lsa="la -alth"
-alias b="(to reco grrec;  ant dist) "
-alias cb="(to reco grrec;  ant clean dist)"
+alias b="(to reco; cd grrec;  ant dist) "
+alias cb="(to reco; cd grrec;  ant clean dist)"
 connect_via_mosh(){
  mosh $1 -- tmux attach || mosh $1 -- tmux
 }
