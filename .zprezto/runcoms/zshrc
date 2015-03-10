@@ -12,18 +12,19 @@ function command_stat {
 
 function prx() {
     pwd=`pwd`
-    cd /home/bernat/git/reco/CustomizeEar
-    ./customize-prod-ear.sh $1 customize-js4-api -Djs4api-hud=true -Djs4api-domengine=true
+    cd /home/bernat/git/reco/modules/static
+    ./gradlew build -Pcustomer=$1 
     mkdir -p /home/bernat/jsapi/proxy/$1
     rm -v -rf /home/bernat/git/jsapi/proxy/$1
-    cp -v -a TmpDir/js/$1 /home/bernat/git/jsapi/proxy/$1
-    chmod -v  -R 777  /home/bernat/git/jsapi/proxy/$1
     killall -9 mitmproxy 
+    cp -vanR build/personalize-$1/js/$1 /home/bernat/git/jsapi/proxy 
+    chmod -v  -R 777  /home/bernat/git/jsapi/proxy/$1
     which mitmproxy
     echo "Press [any] key to start"
     read -n 1
     mitmproxy -v --host -p 3333 -s ~/.mitm.py 
     cd "$pwd"
+    unset pwd
 }
 
 mosh(){
@@ -105,4 +106,9 @@ connect_via_ssh(){
 }
 alias m=connect_via_mosh
 alias s=connect_via_ssh
-unset GREP_OPTIONS
+
+function deployCp2(){
+(cd ~/git/cp2  && ./gradlew warFatJs -Pcustomer=$1 && rsync --progress --rsync-path="sudo rsync" build/libs/cp2-fat-0.4.war bud-app1.int.gravityrd.com:/var/lib/tomcat8/webapps/$1.war)
+}
+alias dcp2=deployCp2
+
