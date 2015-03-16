@@ -10,21 +10,29 @@ function command_stat {
     history | awk '{print $2}' | awk 'BEGIN {FS="|"} {print $1}' | sort | uniq -c | sort -r
 }
 
-function prx() {
-    pwd=`pwd`
-    cd /home/bernat/git/reco/modules/static
-    ./gradlew build -Pcustomer=$1 
-    mkdir -p /home/bernat/jsapi/proxy/$1
-    rm -v -rf /home/bernat/git/jsapi/proxy/$1
-    killall -9 mitmproxy 
-    cp -vanR build/personalize-$1/js/$1 /home/bernat/git/jsapi/proxy 
-    chmod -v  -R 777  /home/bernat/git/jsapi/proxy/$1
+function build_js() {
+    (cd /home/bernat/git/reco/modules/static;
+        date +'rebuild js at %Y-%m-%d %H:%M:%S.%N'
+        ./gradlew build -Pcustomer=$1 -Phud=true && \
+        mkdir -p /home/bernat/jsapi/proxy/$1 &&  \
+        rm -v -rf /home/bernat/git/jsapi/proxy/$1 && \
+        cp -vanR build/personalize-$1/js/$1 /home/bernat/git/jsapi/proxy/ && \
+        chmod -v  -R 777  /home/bernat/git/jsapi/proxy/$1
+        date +'done js rebuild at %Y-%m-%d %H:%M:%S.%N'
+    )
+}
+
+function prx(){
+    build_js $1
+    while inotifywait /home/bernat/git/reco/modules/reco/custom/js/$1.js; do
+        build_js $1
+    done
+}
+
+function mit(){
     which mitmproxy
-    echo "Press [any] key to start"
-    read -n 1
+    killall -9 mitmproxy 
     mitmproxy -v --host -p 3333 -s ~/.mitm.py 
-    cd "$pwd"
-    unset pwd
 }
 
 mosh(){
@@ -105,10 +113,10 @@ connect_via_ssh(){
  ssh $1 -- tmux attach || ssh $1 -- tmux
 }
 alias m=connect_via_mosh
-alias s=connect_via_ssh
+alias c=connect_via_ssh
 
 function deployCp2(){
 (cd ~/git/cp2  && ./gradlew warFatJs -Pcustomer=$1 && rsync --progress --rsync-path="sudo rsync" build/libs/cp2-fat-0.4.war bud-app1.int.gravityrd.com:/var/lib/tomcat8/webapps/$1.war)
 }
 alias dcp2=deployCp2
-
+alias s=subl3
