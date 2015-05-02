@@ -34,27 +34,6 @@ function mit(){
     killall -9 mitmproxy 
     mitmproxy -v --host -p 3333 -s ~/.mitm.py 
 }
-
-mosh(){
-    if [[ $# == 0 || -z $TMUX ]]; then
-        command ssh $@
-        return
-      fi
-    # The hostname is the last parameter (i.e. ${(P)#})
-    local remote=${${(P)#}%.*}
-    local old_name="$(tmux display-message -p '#W')"
-    local renamed=0
-    # Save the current name
-    if [[ $remote != -* ]]; then
-        renamed=1
-        tmux rename-window $remote
-    fi
-    command ssh $@
-    if [[ $renamed == 1 ]]; then
-        tmux rename-window "$old_name"
-    fi
-}
-
 ssh() {
     if [[ $# == 0 || -z $TMUX ]]; then
         command ssh $@
@@ -137,7 +116,33 @@ alias m=connect_via_mosh
 alias c=connect_via_ssh
 
 function deployCp2(){
-(cd ~/git/cp2  && ./gradlew warFatJs -Pcustomer=$1 && rsync --progress --rsync-path="sudo rsync" build/libs/cp2-fat-0.4.war bud-app1.int.gravityrd.com:/var/lib/tomcat8/webapps/$1.war)
+for var in "$@"
+do
+    echo "Doing $var"
+    (cd ~/git/cp2  && ./gradlew warFatJs -Pcustomer=$var && rsync --progress --rsync-path="sudo rsync" build/libs/cp2-fat-0.4.war bud-app1.int.gravityrd.com:/var/lib/tomcat8/webapps/$var.war && wget -qO- $https://cp.gravityrd.com/$var &> /dev/null)
+done
 }
 alias dcp2=deployCp2
 alias sb=subl3
+
+function pr_change(){
+    date_to_check=$1
+    if [ -z "$1" ]
+    then
+        date_to_check="yesterday"
+    fi
+    git log --after="$date_to_check"  --pretty=oneline --name-only  | sed -n -r  's_customers/(.*)_\1_gp' | sort | uniq | tr '/' '\t' | awk -F '\t' '
+$1==x{
+    printf ",%s", $2
+    next
+}
+{
+    x=$1
+    printf "\n%s|%s", $1, $2
+}
+END {
+    printf "\n"
+}'
+}
+
+export EDITOR=vim
