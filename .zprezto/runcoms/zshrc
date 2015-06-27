@@ -140,7 +140,11 @@ done
 alias dcp2=deployCp2
 alias sb=subl3
 alias t=task
-alias yu=yaourt -Syyuaa --noconfirm --aur-url https://aur4.archlinux.org
+function update(){
+    yaourt -Syyuaa --noconfirm --aur-url https://aur4.archlinux.org
+}
+alias yu=update
+
 function pr_change(){
     date_to_check=$1
     if [ -z "$1" ]
