@@ -11,7 +11,7 @@ function command_stat {
 }
 
 function build_js() {
-    (cd /home/bernat/git/reco/modules/static;
+    (cd ~/git/reco/modules/static;
         date +'rebuild js at %Y-%m-%d %H:%M:%S.%N'
         ./gradlew build -Pcustomer=$1 -Phud=true && \
         mkdir -p /opt/tmp/jsapi/proxy/$1 &&  \
@@ -24,7 +24,7 @@ function build_js() {
 
 function prx(){
     build_js $1
-    while inotifywait -e close_write  /home/bernat/git/reco/modules/reco/custom/js/$1.js; do
+    while inotifywait -e close_write  ~/git/reco/modules/reco/custom/js/$1.js; do
         build_js $1
     done
 }
