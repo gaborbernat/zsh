@@ -169,4 +169,5 @@ export EDITOR=vim
 
 bindkey -v
 bindkey '\e[3~' delete-char
-bindkey '^R' history-incremental-search-backward
+bindkey -M isearch '^R' history-incremental-search-backward
+bindkey -M isearch '^S' history-incremental-search-forward
