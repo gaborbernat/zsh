@@ -53,7 +53,7 @@ ssh() {
         tmux rename-window "$old_name"
     fi
 }
-
+PATH=/home/bernat/.gem/ruby/2.2.0/bin:$PATH
 export MARKPATH=$HOME/.marks
 function to { 
     cd -P "$MARKPATH/$1" 2>/dev/null || echo "No such mark: $1"
