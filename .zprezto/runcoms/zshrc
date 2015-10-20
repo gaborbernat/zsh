@@ -127,6 +127,8 @@ do
             dest='bud-app1' ;;
         sin)
             dest='sin-app2' ;;
+        sjc)
+            dest='sjc-queue2' ;;
         *) 
             echo "No cluster"
             dest='bud-app1' ;;
@@ -134,7 +136,7 @@ do
     (cd ~/git/cp2  && \
     ./gradlew warFatJs -Pcustomer=$var && \
     echo "cluster($cluster)" copy build/libs/cp2-fat-0.4.war "${dest}.int.gravityrd.com:/var/lib/tomcat8/webapps/$var.war" && \
-    rsync --progress --rsync-path="sudo rsync" build/libs/cp2-fat-0.4.war "${dest}.int.gravityrd.com:/var/lib/tomcat8/webapps/$var.war")
+    rsync --progress --rsync-path="sudo rsync" build/libs/cp2-fat.war "${dest}.int.gravityrd.com:/var/lib/tomcat8/webapps/$var.war")
 done
 }
 alias dcp2=deployCp2
