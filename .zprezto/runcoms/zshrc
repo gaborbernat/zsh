@@ -10,50 +10,6 @@ function command_stat {
     history | awk '{print $2}' | awk 'BEGIN {FS="|"} {print $1}' | sort | uniq -c | sort -r
 }
 
-function build_js() {
-    (cd ~/git/reco/modules/static;
-        date +'rebuild js at %Y-%m-%d %H:%M:%S.%N'
-        ./gradlew build -Pcustomer=$1 -Phud=true && \
-        mkdir -p /opt/tmp/jsapi/proxy/$1 &&  \
-        rm -v -rf /opt/tmp/jsapi/proxy/$1 && \
-        cp -vanR build/personalize-$1/js/$1 /opt/tmp/jsapi/proxy/ && \
-        chmod -v  -R 777  /opt/tmp/jsapi/proxy/$1
-        date +'done js rebuild at %Y-%m-%d %H:%M:%S.%N'
-    )
-}
-
-function prx(){
-    build_js $1
-    while inotifywait -e close_write  ~/git/reco/modules/reco/custom/js/$1.js; do
-        build_js $1
-    done
-}
-
-function mit(){
-    which mitmproxy
-    killall -9 mitmproxy 
-    mitmproxy -v --host -p 3333 -s ~/.mitm.py 
-}
-ssh() {
-    if [[ $# == 0 || -z $TMUX ]]; then
-        command ssh $@
-        return
-    fi
-    # The hostname is the last parameter (i.e. ${(P)#})
-    local remote=${${(P)#}%.*}
-    local old_name="$(tmux display-message -p '#W')"
-    local renamed=0
-    # Save the current name
-    if [[ $remote != -* ]]; then
-        renamed=1
-        tmux rename-window $remote
-    fi
-    command ssh $@
-    if [[ $renamed == 1 ]]; then
-        tmux rename-window "$old_name"
-    fi
-}
-PATH=/home/bernat/.gem/ruby/2.2.0/bin:$PATH
 export MARKPATH=$HOME/.marks
 function to { 
     cd -P "$MARKPATH/$1" 2>/dev/null || echo "No such mark: $1"
@@ -80,72 +36,9 @@ bashcompinit
 
 alias g='git'
 complete -o default -o nospace -F _git g
-alias pi="sudo pacman --noconfirm -S"
-alias yi="yaourt --noconfirm -S"
 alias lsa="la -alth"
-alias b="(to reco; cd grrec;  ant dist) "
-alias cb="(to reco; cd grrec;  ant clean dist)"
-connect_via_mosh(){
- mosh $1 -- tmux attach || mosh $1 -- tmux
-}
-s(){
-    re='^[0-9]+$'
-    c_s=$(echo "$1" | sed -E 's/([a-z]).*/\1/g')
-    dest=$(echo "$1" | sed -E 's/[a-z](.*)/\1/g')
-    if [[ $dest =~ $re ]] ; then
-        dest="app${dest}"
-    fi
-    case $c_s in
-        b)
-            cluster='bud' ;;
-        n)
-            cluster='nrt' ;;
-        a)
-            cluster='ams' ;;
-        *) 
-            echo "No cluster for ${BASH_REMATCH[1]}"
-            return
-    esac
-    server="${cluster}-${dest}.int.gravityrd.com"
-    ssh "${server}"
-}
-connect_via_ssh(){
- ssh $1 -- tmux attach || ssh $1 -- tmux
-}
-alias m=connect_via_mosh
-alias c=connect_via_ssh
-
-function deployCp2(){
-for var in "$@"
-do
-    echo "Doing $var"
-    cluster=$(curl -s "registry.int.gravityrd.com/customers/$var" | jshon -e data -e proxy_cluster_name -u)
-    case $cluster in
-        bud)
-            dest='bud-app1' ;;
-        ams)
-            dest='bud-app1' ;;
-        sin)
-            dest='sin-app2' ;;
-        sjc)
-            dest='sjc-queue2' ;;
-        *) 
-            echo "No cluster"
-            dest='bud-app1' ;;
-    esac
-    (cd ~/git/cp2  && \
-    ./gradlew warFatJs -Pcustomer=$var && \
-    echo "cluster($cluster)" copy build/libs/cp2-fat-0.4.war "${dest}.int.gravityrd.com:/var/lib/tomcat8/webapps/$var.war" && \
-    rsync --progress --rsync-path="sudo rsync" build/libs/cp2-fat.war "${dest}.int.gravityrd.com:/var/lib/tomcat8/webapps/$var.war")
-done
-}
-alias dcp2=deployCp2
 alias sb=subl3
 alias t=task
-function update(){
-    yaourt -Syyuaa --noconfirm --aur-url https://aur4.archlinux.org
-}
-alias yu=update
 
 function pr_change(){
     date_to_check=$1
