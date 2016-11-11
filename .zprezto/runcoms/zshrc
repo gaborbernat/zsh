@@ -38,8 +38,11 @@ alias g='git'
 complete -o default -o nospace -F _git g
 alias lsa="la -alth"
 alias sb=subl3
-alias t=task
-
+alias v=vim
+alias t=tig
+alias tm=tmux
+alias d='sudo docker'
+alias gr='grep --color=always'
 function pr_change(){
     date_to_check=$1
     if [ -z "$1" ]
@@ -66,3 +69,8 @@ bindkey -v
 bindkey '\e[3~' delete-char
 bindkey -M isearch '^R' history-incremental-search-backward
 bindkey -M isearch '^S' history-incremental-search-forward
+
+export PATH="/home/bernat/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
