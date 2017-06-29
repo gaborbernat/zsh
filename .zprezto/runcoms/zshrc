@@ -36,13 +36,13 @@ bashcompinit
 
 alias g='git'
 complete -o default -o nospace -F _git g
-alias lsa="la -alth"
 alias sb=subl3
 alias v=vim
 alias t=tig
 alias tm=tmux
 alias d='sudo docker'
 alias gr='grep --color=always'
+alias l='ls -alth'
 function pr_change(){
     date_to_check=$1
     if [ -z "$1" ]
@@ -67,10 +67,24 @@ export EDITOR=vim
 
 bindkey -v
 bindkey '\e[3~' delete-char
-bindkey -M isearch '^R' history-incremental-search-backward
-bindkey -M isearch '^S' history-incremental-search-forward
+# Search backwards and forwards with a pattern
+bindkey -M vicmd '/' history-incremental-pattern-search-backward
+bindkey -M vicmd '?' history-incremental-pattern-search-forward
 
-export PATH="/home/bernat/.pyenv/bin:$PATH"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
+# set up for insert mode too
+bindkey -M viins '^R' history-incremental-pattern-search-backward
+bindkey -M viins '^F' history-incremental-pattern-search-forward
+
+publishBranch() {
+  git checkout -b $2 $1
+  git push -u origin $2
+}
+alias gcb=publishBranch
+
+deleteBranch(){
+  git checkout master
+  git push origin :$1
+  git branch -D $1
+}
+alias gdb=deleteBranch
 
